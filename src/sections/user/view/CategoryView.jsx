@@ -1,4 +1,4 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -10,14 +10,16 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-import { getAllUsers } from 'src/myFunctions/users/UserFunctions';
+import { getCategories, deleteCategory } from 'src/myFunctions/category/CategoryFunctions';
+
+import CategoryTable from 'src/sections/category/CategoryTable';
+
 // import { users } from 'src/_mock/user';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
 import TableNoData from '../table-no-data';
-import UserTableRow from '../user-table-row';
 import UserTableHead from '../user-table-head';
 import TableEmptyRows from '../table-empty-rows';
 import UserTableToolbar from '../user-table-toolbar';
@@ -25,7 +27,7 @@ import { emptyRows, applyFilter, getComparator } from '../utils';
 
 // ----------------------------------------------------------------------
 
-export default function UserPage() {
+export default function CategoryView() {
   const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState('asc');
@@ -41,14 +43,15 @@ export default function UserPage() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    getAllUsers().then((data) => {
-      setUsers(data);
-      console.log(data);
-    })
-    .catch((error) => {
-      console.error('Error fetching users:', error);
-    });
-  },[]);
+    getCategories()
+      .then((data) => {
+        setUsers(data);
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error('Error fetching users:', error);
+      });
+  }, []);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -107,13 +110,16 @@ export default function UserPage() {
 
   const notFound = !dataFiltered.length && !!filterName;
 
+  const handleDelete = (id) => {
+    deleteCategory(id);
+  };
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Users</Typography>
+        <Typography variant="h4">Category</Typography>
 
         <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
-          New User
+          Add Category
         </Button>
       </Stack>
 
@@ -136,10 +142,11 @@ export default function UserPage() {
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
                   { id: 'name', label: 'Name' },
-                  { id: 'email', label: 'Email' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
+                  { id: 'email', label: 'Image' },
+
+                  { id: '' },
+                  { id: '' },
+                  { id: '' },
                   { id: '' },
                 ]}
               />
@@ -147,15 +154,13 @@ export default function UserPage() {
                 {dataFiltered
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => (
-                    <UserTableRow
+                    <CategoryTable
                       key={row._id}
-                      name={`${row.firstname} ${row.lastname}`}
-                      role={row.role}
-                      status={row.status}
-                      company={row.email}
-                      avatarUrl={`http://localhost:8000/uploads/newFolder/${row.avatar}`}
-                      isVerified={row.isVerified}
+                      name={row.name}
+                      imageTag={`http://localhost:8000/uploads/category/${row.image}`}
                       selected={selected.indexOf(row.name) !== -1}
+                      onDelete={() => handleDelete(row._id)}
+                      categoryID={row._id}
                       handleClick={(event) => handleClick(event, row.name)}
                     />
                   ))}
